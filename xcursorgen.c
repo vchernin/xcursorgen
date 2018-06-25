@@ -262,6 +262,12 @@ load_image (struct flist *list, const char *prefix)
   png_read_update_info (png, info);
 
   image = XcursorImageCreate (width, height);
+  if (image == NULL)
+    {
+      fclose (fp);
+      png_destroy_read_struct (&png, &info, NULL);
+      return NULL;
+    }
 
   image->size = list->size;
   image->xhot = list->xhot;
