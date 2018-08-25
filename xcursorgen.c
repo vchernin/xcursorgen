@@ -152,7 +152,7 @@ read_config_file (const char *config, struct flist **list)
 static void
 premultiply_data (png_structp png, png_row_infop row_info, png_bytep data)
 {
-  int i;
+  png_size_t i;
 
   for (i = 0; i < row_info->rowbytes; i += 4)
     {
@@ -179,7 +179,7 @@ load_image (struct flist *list, const char *prefix)
   png_infop info;
   png_bytepp rows;
   FILE *fp;
-  int i;
+  png_uint_32 i;
   png_uint_32 width, height;
   int depth, color, interlace;
   char *file;
