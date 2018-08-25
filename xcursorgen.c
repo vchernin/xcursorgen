@@ -28,12 +28,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xcursor/Xcursor.h>
 
 #include <png.h>
+
+static const char *ProgramName;
 
 struct flist
 {
@@ -96,7 +99,9 @@ read_config_file (const char *config, struct flist **list)
 	break;
       default:
 	{
-	  fprintf (stderr, "Bad config file data!\n");
+	  fprintf (stderr, "%s: Bad config file data on line %d of %s\n",
+		   ProgramName, count + 1,
+		   strcmp(config, "-") ? config : "stdin");
 	  fclose (fp);
 	  return 0;
 	}
@@ -105,7 +110,8 @@ read_config_file (const char *config, struct flist **list)
       curr = malloc (sizeof (struct flist));
       if (curr == NULL)
 	{
-          fprintf (stderr, "malloc() failed\n");
+	  fprintf (stderr, "%s: malloc() failed: %s\n",
+		   ProgramName, strerror(errno));
 	  fclose (fp);
           return 0;
 	}
@@ -119,7 +125,8 @@ read_config_file (const char *config, struct flist **list)
       curr->pngfile = strdup (pngfile);
       if (curr->pngfile == NULL)
 	{
-          fprintf (stderr, "strdup() failed\n");
+	  fprintf (stderr, "%s: strdup() failed: %s\n",
+		   ProgramName, strerror(errno));
 	  fclose (fp);
 	  free(curr);
           return 0;
@@ -206,7 +213,8 @@ load_image (struct flist *list, const char *prefix)
       file = malloc (strlen (prefix) + 1 + strlen (list->pngfile) + 1);
       if (file == NULL)
 	{
-          fprintf (stderr, "malloc() failed\n");
+	  fprintf (stderr, "%s: malloc() failed: %s\n",
+		   ProgramName, strerror(errno));
 	  png_destroy_read_struct (&png, &info, NULL);
           return NULL;
 	}
@@ -264,6 +272,10 @@ load_image (struct flist *list, const char *prefix)
   image = XcursorImageCreate (width, height);
   if (image == NULL)
     {
+      fprintf (stderr,
+               "%s: XcursorImageCreate() failed to create %u x %u image\n"
+               " for file %s\n",
+               ProgramName, width, height, list->pngfile);
       fclose (fp);
       png_destroy_read_struct (&png, &info, NULL);
       return NULL;
@@ -323,7 +335,8 @@ write_cursors (int count, struct flist *list,
       image = load_image (list, prefix);
       if (image == NULL)
 	{
-	  fprintf (stderr, "PNG error while reading %s!\n", list->pngfile);
+	  fprintf (stderr, "%s: PNG error while reading %s\n",
+		   ProgramName, list->pngfile);
 	  fclose(fp);
 	  return 1;
 	}
@@ -349,7 +362,7 @@ check_image (char *image)
 
   if (XReadBitmapFileData (image, &width, &height, &data, &x_hot, &y_hot) != BitmapSuccess)
   {
-    fprintf (stderr, "Can't open bitmap file \"%s\"\n", image);
+    fprintf (stderr, "%s: Can't open bitmap file \"%s\"\n", ProgramName, image);
     return 1;
   }
   else {
@@ -384,6 +397,8 @@ main (int argc, char *argv[])
   const char *in = NULL, *out = NULL;
   const char *prefix = NULL;
   int i;
+
+  ProgramName = argv[0];
 
   for (i = 1; i < argc; i++)
     {
@@ -442,7 +457,8 @@ main (int argc, char *argv[])
   count = read_config_file (in, &list);
   if (count == 0)
     {
-      fprintf (stderr, "Error reading config file!\n");
+      fprintf (stderr, "%s: Error reading config file %s\n", argv[0],
+               strcmp(in, "-") ? in : "from stdin");
       return 1;
     }
 
