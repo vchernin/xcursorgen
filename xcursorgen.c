@@ -210,6 +210,15 @@ load_image (struct flist *list, const char *prefix)
 
   if (prefix)
     {
+#ifdef HAVE_ASPRINTF
+      if (asprintf(&file, "%s/%s", prefix, list->pngfile) == -1)
+	{
+	  fprintf (stderr, "%s: asprintf() failed: %s\n",
+		   ProgramName, strerror(errno));
+	  png_destroy_read_struct (&png, &info, NULL);
+	  return NULL;
+	}
+#else
       file = malloc (strlen (prefix) + 1 + strlen (list->pngfile) + 1);
       if (file == NULL)
 	{
@@ -221,6 +230,7 @@ load_image (struct flist *list, const char *prefix)
       strcpy (file, prefix);
       strcat (file, "/");
       strcat (file, list->pngfile);
+#endif
     }
   else
     file = list->pngfile;

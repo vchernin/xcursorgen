@@ -8,6 +8,7 @@ AC_INIT([xcursorgen],
 	[xcursorgen])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
+AC_USE_SYSTEM_EXTENSIONS
 
 # Initialize Automake
 AM_INIT_AUTOMAKE([foreign dist-bzip2])
@@ -20,6 +21,8 @@ XORG_DEFAULT_OPTIONS
 
 # Checks for pkg-config packages
 PKG_CHECK_MODULES(XCURSORGEN, x11 xcursor libpng >= 1.2.0)
+
+AC_CHECK_FUNCS([asprintf])
 
 AC_CONFIG_FILES([
 	Makefile
