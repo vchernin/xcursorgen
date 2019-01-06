@@ -3,7 +3,7 @@ dnl Process this file with autoconf to create configure.
 # Initialize Autoconf
 AC_PREREQ([2.60])
 AC_INIT([xcursorgen],
-	[1.0.6],
+	[1.0.7],
 	[https://gitlab.freedesktop.org/xorg/app/xcursorgen/issues],
 	[xcursorgen])
 AC_CONFIG_SRCDIR([Makefile.am])
